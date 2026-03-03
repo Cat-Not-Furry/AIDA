@@ -30,3 +30,11 @@ Abre `http://localhost:3000`.
 - Habilitar Auth.
 - Crear bucket `documents`.
 - Ejecutar `supabase_schema.sql` para tablas `templates` y `documents`.
+
+## Guía para agentes
+
+Para trabajo asistido con agentes en este proyecto:
+
+- Punto de entrada: `indice_agente.md`
+- Reglas de uso diario: `reglas_rapidas.md`
+- Escalamiento para decisiones complejas: `analisis_profundo.md`
