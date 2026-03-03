@@ -1,0 +1,67 @@
+# Dependencias (pesado)
+node_modules/
+aida_web/node_modules/
+
+# Build / cache Next.js (pesado)
+.next/
+out/
+.turbo/
+.swc/
+coverage/
+.nyc_output/
+playwright-report/
+test-results/
+*.tsbuildinfo
+aida_web/.next/
+aida_web/out/
+aida_web/.turbo/
+aida_web/.swc/
+aida_web/coverage/
+aida_web/.nyc_output/
+aida_web/playwright-report/
+aida_web/test-results/
+aida_web/*.tsbuildinfo
+
+# Variables de entorno (credenciales)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+aida_web/.env
+aida_web/.env.local
+aida_web/.env.development.local
+aida_web/.env.test.local
+aida_web/.env.production.local
+
+# Deploy local tooling
+.vercel/
+aida_web/.vercel/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Archivos de sistema/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+
+# Artefactos locales opcionales
+public/generated/
+
+# PDFs temporales de trabajo (no versionar)
+public/generated/**/*.pdf
+public/temp/**/*.pdf
+tmp/**/*.pdf
+temp/**/*.pdf
+uploads/**/*.pdf
+aida_web/public/generated/**/*.pdf
+aida_web/public/temp/**/*.pdf
+aida_web/tmp/**/*.pdf
+aida_web/temp/**/*.pdf
+aida_web/uploads/**/*.pdf

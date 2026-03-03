@@ -1,0 +1,75 @@
+@import "tailwindcss";
+
+:root {
+  /* Light mode – paleta suave azulada */
+  --bg-main: #EFF6FF;          /* ligero azul cielo */
+  --bg-card: #FFFFFF;
+  --border-color: #DDE4EA;
+
+  --text-main: #1E293B;
+  --text-secondary: #475569;
+  --text-muted: #64748B;
+
+  --primary: #3B82F6;         /* azul medio más suave */
+  --primary-hover: #60A5FA;
+  --secondary: #38BDF8;       /* azul claro adicional */
+  --secondary-hover: #7DD3FC;
+
+  --success: #22C55E;
+  --warning: #EAB308;
+  --error: #EF4444;
+  --info: #60A5FA;
+}
+
+[data-theme="dark"] {
+  /* Dark mode */
+  --bg-main: #0F172A;
+  --bg-card: #1E293B;
+  --border-color: #334155;
+
+  --text-main: #E5E7EB;
+  --text-secondary: #CBD5E1;
+  --text-muted: #64748B;
+
+  --primary: #3B82F6;
+  --primary-hover: #2563EB;
+  --secondary: #2DD4BF;
+  --secondary-hover: #14B8A6;
+
+  --success: #4ADE80;
+  --warning: #FBBF24;
+  --error: #F87171;
+  --info: #60A5FA;
+}
+
+@media (prefers-color-scheme: dark) {
+  /* nothing needed here, theme is handled in JS */
+}
+
+body {
+  background: var(--bg-main);
+  color: var(--text-main);
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+/* Utility CSS to use variables in components where needed */
+.card-bg {
+  background: var(--bg-card);
+}
+.border-soft {
+  border-color: var(--border-color);
+}
+.text-secondary {
+  color: var(--text-secondary);
+}
+.text-muted {
+  color: var(--text-muted);
+}
+.btn-primary {
+  background-color: var(--primary);
+  color: white;
+}
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+}
