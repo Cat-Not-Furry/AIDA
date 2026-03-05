@@ -33,6 +33,7 @@ aida_web/.env.local
 aida_web/.env.development.local
 aida_web/.env.test.local
 aida_web/.env.production.local
+entorno.txt
 
 # Deploy local tooling
 .vercel/

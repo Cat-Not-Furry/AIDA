@@ -1,10 +1,15 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import {
+  supabase,
+  isSupabaseConfigured,
+  SUPABASE_CONFIG_ERROR,
+} from "@/lib/supabaseClient";
+import type { AuthChangeEvent, Session, User } from "@supabase/supabase-js";
 
 interface AuthContextType {
-  user: any | null;
+  user: User | null;
   loading: boolean;
   signUp: (email: string, password: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
@@ -14,27 +19,27 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<any | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(isSupabaseConfigured);
 
   useEffect(() => {
-    if (!supabase) {
-      // supabase not configured; nothing to do
-      setLoading(false);
+    if (!isSupabaseConfigured) {
       return;
     }
 
     // check initial session
     (async () => {
-      const { data }: any = await supabase.auth.getSession();
+      const { data } = await supabase.auth.getSession();
       setUser(data?.session?.user ?? null);
       setLoading(false);
     })();
 
-    const listener = supabase.auth.onAuthStateChange((event: any, session: any) => {
+    const listener = supabase.auth.onAuthStateChange(
+      (_event: AuthChangeEvent, session: Session | null) => {
       setUser(session?.user ?? null);
       setLoading(false);
-    });
+      },
+    );
 
     return () => {
       listener?.data?.subscription?.unsubscribe?.();
@@ -42,23 +47,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   async function signUp(email: string, password: string) {
-    if (!supabase) throw new Error("Supabase client not initialized");
+    if (!isSupabaseConfigured) throw new Error(SUPABASE_CONFIG_ERROR);
     setLoading(true);
-    const { error }: any = await supabase.auth.signUp({ email, password });
+    const { error } = await supabase.auth.signUp({ email, password });
     if (error) throw error;
   }
 
   async function signIn(email: string, password: string) {
-    if (!supabase) throw new Error("Supabase client not initialized");
+    if (!isSupabaseConfigured) throw new Error(SUPABASE_CONFIG_ERROR);
     setLoading(true);
-    const { error }: any = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
   }
 
   async function signOut() {
-    if (!supabase) throw new Error("Supabase client not initialized");
+    if (!isSupabaseConfigured) throw new Error(SUPABASE_CONFIG_ERROR);
     setLoading(true);
-    const { error }: any = await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut();
     if (error) throw error;
     setUser(null);
   }

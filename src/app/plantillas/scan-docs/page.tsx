@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { isSupabaseConfigured, supabase } from "@/lib/supabaseClient";
 import { useAuth } from "@/context/AuthContext";
 
 type Template = { id: string; name: string };
@@ -15,6 +15,9 @@ export default function ScanDocumentsPage() {
 
   useEffect(() => {
     async function load() {
+      if (!isSupabaseConfigured) {
+        return;
+      }
       const { data } = await supabase
         .from("templates")
         .select("id, name")
@@ -25,6 +28,10 @@ export default function ScanDocumentsPage() {
   }, [user]);
 
   const handleUpload = async () => {
+    if (!isSupabaseConfigured) {
+      setError("Supabase no está configurado. No se puede subir ni asociar documentos.");
+      return;
+    }
     if (!files || !templateId) {
       setError("Selecciona archivos y plantilla");
       return;
@@ -40,7 +47,9 @@ export default function ScanDocumentsPage() {
       await supabase.from("documents").insert({
         user_id: user?.id,
         template_id: templateId,
-        file_url: data.path,
+        original_filename: files[0].name,
+        json_data: {},
+        pdf_url: supabase.storage.from("documents").getPublicUrl(data.path).data.publicUrl,
       });
       window.location.href = "/plantillas";
     }
@@ -49,11 +58,17 @@ export default function ScanDocumentsPage() {
   return (
     <div className="flex flex-col gap-6 max-w-md">
       <h1 className="text-2xl font-bold">Escaneo de documentos</h1>
+      {!isSupabaseConfigured && (
+        <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          Modo degradado activo: configura Supabase para habilitar la carga de documentos.
+        </div>
+      )}
       {error && <p className="text-red-500">{error}</p>}
       <select
         value={templateId}
         onChange={(e) => setTemplateId(e.target.value)}
         className="border rounded-lg px-3 py-2"
+        disabled={!isSupabaseConfigured}
       >
         <option value="">-- Selecciona plantilla --</option>
         {templates.map((tpl) => (
@@ -67,8 +82,13 @@ export default function ScanDocumentsPage() {
         multiple
         accept="image/*,application/pdf"
         onChange={(e) => setFiles(e.target.files)}
+        disabled={!isSupabaseConfigured}
       />
-      <button onClick={handleUpload} className="btn-primary py-2 px-4 rounded-full">
+      <button
+        onClick={handleUpload}
+        disabled={!isSupabaseConfigured}
+        className="btn-primary py-2 px-4 rounded-full disabled:opacity-60 disabled:cursor-not-allowed"
+      >
         Generar PDF (simulado)
       </button>
     </div>

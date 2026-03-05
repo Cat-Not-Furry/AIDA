@@ -12,8 +12,8 @@ interface DocumentFormProps {
 
 export default function DocumentForm({ structure, templateId }: DocumentFormProps) {
   const { user } = useAuth();
-  const [values, setValues] = useState<{ [key: string]: string }>(() => {
-    const init: any = {};
+  const [values, setValues] = useState<Record<string, string>>(() => {
+    const init: Record<string, string> = {};
     Object.keys(structure).forEach((k) => (init[k] = ""));
     return init;
   });
@@ -46,12 +46,16 @@ export default function DocumentForm({ structure, templateId }: DocumentFormProp
       await supabase.from("documents").insert({
         user_id: user?.id,
         template_id: templateId,
-        file_url: uploadData?.path,
+        original_filename: filename,
+        json_data: values,
+        pdf_url: uploadData?.path
+          ? supabase.storage.from("documents").getPublicUrl(uploadData.path).data.publicUrl
+          : null,
       });
 
       alert("Documento generado y guardado");
-    } catch (err: any) {
-      setError(err.message || "Error al generar documento");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Error al generar documento");
     } finally {
       setSaving(false);
     }

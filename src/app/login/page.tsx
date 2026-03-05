@@ -23,8 +23,8 @@ export default function LoginPage() {
         await signIn(email, password);
       }
       router.push("/");
-    } catch (err: any) {
-      setError(err.message || "Ocurrió un error");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Ocurrió un error");
     }
   }
 

@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -14,12 +15,12 @@ import {
 } from "@heroicons/react/24/outline";
 
 const navItems = [
-  { name: "Dashboard", href: "/", icon: <HomeIcon className="w-5 h-5" /> },
-  { name: "Alumnos", href: "/alumnos", icon: <UserGroupIcon className="w-5 h-5" /> },
-  { name: "Plantillas", href: "/plantillas", icon: <DocumentDuplicateIcon className="w-5 h-5" /> },
-  { name: "Documentos", href: "/documentos", icon: <DocumentTextIcon className="w-5 h-5" /> },
-  { name: "Historial", href: "/historial", icon: <ClockIcon className="w-5 h-5" /> },
-  { name: "Ajustes", href: "/ajustes", icon: <Cog6ToothIcon className="w-5 h-5" /> },
+  { name: "Dashboard", href: "/", icon: <HomeIcon suppressHydrationWarning className="w-5 h-5" /> },
+  { name: "Alumnos", href: "/alumnos", icon: <UserGroupIcon suppressHydrationWarning className="w-5 h-5" /> },
+  { name: "Plantillas", href: "/plantillas", icon: <DocumentDuplicateIcon suppressHydrationWarning className="w-5 h-5" /> },
+  { name: "Documentos", href: "/documentos", icon: <DocumentTextIcon suppressHydrationWarning className="w-5 h-5" /> },
+  { name: "Historial", href: "/historial", icon: <ClockIcon suppressHydrationWarning className="w-5 h-5" /> },
+  { name: "Ajustes", href: "/ajustes", icon: <Cog6ToothIcon suppressHydrationWarning className="w-5 h-5" /> },
 ];
 
 function UserInfo() {
@@ -34,11 +35,30 @@ function UserInfo() {
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    queueMicrotask(() => setMounted(true));
+  }, []);
+
+  if (!mounted) {
+    return (
+      <aside className="hidden md:flex w-64 flex-col bg-white/95 backdrop-blur-md rounded-r-4xl shadow-lg p-8 dark:bg-gray-900/90 dark:shadow-xl">
+        <div className="mb-10 h-10 w-32 rounded bg-gray-100 dark:bg-gray-800" />
+        <div className="flex flex-col gap-3">
+          <div className="h-11 rounded-2xl bg-gray-100 dark:bg-gray-800" />
+          <div className="h-11 rounded-2xl bg-gray-100 dark:bg-gray-800" />
+          <div className="h-11 rounded-2xl bg-gray-100 dark:bg-gray-800" />
+          <div className="h-11 rounded-2xl bg-gray-100 dark:bg-gray-800" />
+        </div>
+      </aside>
+    );
+  }
 
   return (
     <aside className="hidden md:flex w-64 flex-col bg-white/95 backdrop-blur-md rounded-r-4xl shadow-lg p-8 dark:bg-gray-900/90 dark:shadow-xl">
       <div className="mb-10 flex items-center gap-3">
-        <Image src="/images/logo1.png" alt="AIDA" width={40} height={40} />
+        <Image suppressHydrationWarning src="/images/logo1.png" alt="AIDA" width={40} height={40} />
         <span className="font-bold text-primary dark:text-info text-xl tracking-wide">A.I.D.A.</span>
       </div>
 
