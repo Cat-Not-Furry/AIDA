@@ -39,10 +39,13 @@ export default function Navbar() {
         </button>
         {user && (
           <button
-            onClick={() => {
-              signOut();
-              // redirect handled by middleware or manually
-              window.location.href = "/login";
+            onClick={async () => {
+              try {
+                await signOut();
+                window.location.href = "/login";
+              } catch {
+                window.location.href = "/login";
+              }
             }}
             className="ml-2 text-sm text-red-500 hover:underline"
           >

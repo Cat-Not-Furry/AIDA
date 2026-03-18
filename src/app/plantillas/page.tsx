@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { isSupabaseConfigured, supabase } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 
 type Template = {
   id: string;
@@ -10,26 +10,13 @@ type Template = {
   created_at: string;
 };
 
-type TemplateDocumentCountRow = {
-  template_id: string;
-};
-
 export default function PlantillasPage() {
   const [templates, setTemplates] = useState<Template[]>([]);
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
-  const [degradedMessage, setDegradedMessage] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadTemplates() {
-      if (!isSupabaseConfigured) {
-        setDegradedMessage(
-          "Supabase no está configurado. Puedes ver la interfaz, pero las acciones de plantillas están deshabilitadas.",
-        );
-        setLoading(false);
-        return;
-      }
-
       const { data, error } = await supabase
         .from("templates")
         .select("id, name, created_at")
@@ -48,8 +35,7 @@ export default function PlantillasPage() {
             .select("template_id")
             .in("template_id", ids);
           const map: Record<string, number> = {};
-          const docRows = (docs as TemplateDocumentCountRow[] | null) ?? [];
-          docRows.forEach((d) => {
+          (docs || []).forEach((d: any) => {
             map[d.template_id] = (map[d.template_id] || 0) + 1;
           });
           setCounts(map);
@@ -60,22 +46,14 @@ export default function PlantillasPage() {
     loadTemplates();
   }, []);
 
-  const isDegraded = !isSupabaseConfigured;
-
   return (
     <div className="flex flex-col gap-8">
       <h1 className="text-2xl font-bold">Plantillas &rarr; OCR experimental</h1>
-      {degradedMessage && (
-        <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          {degradedMessage}
-        </div>
-      )}
 
       {/* quick actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-white rounded-3xl shadow-lg p-8 flex flex-col items-center text-center">
           <svg
-            suppressHydrationWarning
             xmlns="http://www.w3.org/2000/svg"
             className="h-16 w-16 text-primary mb-4"
             fill="none"
@@ -91,11 +69,7 @@ export default function PlantillasPage() {
           </svg>
           <h2 className="text-xl font-semibold">Escanear plantillas</h2>
           <p className="text-secondary mt-2">Sube o toma una foto de una plantilla para procesarla.</p>
-          <Link
-            href={isDegraded ? "#" : "/plantillas/scan"}
-            aria-disabled={isDegraded}
-            className={`mt-6 ${isDegraded ? "pointer-events-none" : ""}`}
-          >
+          <Link href="/plantillas/scan" className="mt-6">
             <button className="btn-primary py-3 px-6 rounded-full">
               Ir a escaneo
             </button>
@@ -104,7 +78,6 @@ export default function PlantillasPage() {
 
         <div className="bg-white rounded-3xl shadow-lg p-8 flex flex-col items-center text-center">
           <svg
-            suppressHydrationWarning
             xmlns="http://www.w3.org/2000/svg"
             className="h-16 w-16 text-secondary mb-4"
             fill="none"
@@ -120,11 +93,7 @@ export default function PlantillasPage() {
           </svg>
           <h2 className="text-xl font-semibold">Escanear documentos</h2>
           <p className="text-secondary mt-2">Convierte varias hojas en un solo PDF y asócialas a una plantilla.</p>
-          <Link
-            href={isDegraded ? "#" : "/plantillas/scan-docs"}
-            aria-disabled={isDegraded}
-            className={`mt-6 ${isDegraded ? "pointer-events-none" : ""}`}
-          >
+          <Link href="/plantillas/scan-docs" className="mt-6">
             <button className="btn-primary py-3 px-6 rounded-full">
               Comenzar escaneo
             </button>

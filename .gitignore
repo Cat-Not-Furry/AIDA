@@ -1,3 +1,10 @@
+# Markdown (excepto README y reglas de agente)
+*.md
+!README.md
+!indice_agente.md
+!reglas_rapidas.md
+!analisis_profundo.md
+
 # Dependencias (pesado)
 node_modules/
 aida_web/node_modules/
@@ -51,6 +58,18 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+
+# Entornos y herramientas específicas de máquina
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.mypy_cache/
+.cursor/
+.cursorrules
+*.plan.md
+.cache/
 
 # Artefactos locales opcionales
 public/generated/

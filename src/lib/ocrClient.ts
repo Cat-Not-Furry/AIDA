@@ -8,12 +8,22 @@ import type {
 } from "@/types/ocr";
 
 const OCR_BASE_URL = process.env.NEXT_PUBLIC_API_OCR_URL || "";
+const OCR_FALLBACK_BASE_URL = process.env.NEXT_PUBLIC_API_OCR_FALLBACK_URL || "";
+const OCR_FALLBACK_PROVIDER = process.env.NEXT_PUBLIC_OCR_FALLBACK_PROVIDER || "OCR.space";
 
 export interface ProcessDocumentOptions {
 	lang?: string;
 	returnCoords?: boolean;
 	useUnifiedOcr?: boolean;
+	optimizeFor?: "texto" | "estructura" | "precision";
 	signal?: AbortSignal;
+}
+
+export interface ProcessDocumentResult {
+	data: OcrResponse;
+	usedFallback: boolean;
+	provider: "primary" | "fallback";
+	providerLabel: string;
 }
 
 export class OcrClientError extends Error {
@@ -111,31 +121,33 @@ export function isOcrConfigured(): boolean {
 	return Boolean(OCR_BASE_URL);
 }
 
-export async function processDocument(
-	file: File,
-	options: ProcessDocumentOptions = {},
-): Promise<OcrResponse> {
-	if (!OCR_BASE_URL) {
-		throw new OcrClientError(
-			"Falta configurar NEXT_PUBLIC_API_OCR_URL",
-			500,
-		);
-	}
-
+function buildFormData(file: File, options: ProcessDocumentOptions): FormData {
 	const formData = new FormData();
 	formData.append("file", file);
 	formData.append("lang", options.lang ?? "spa");
+	formData.append("optimizar_para", options.optimizeFor ?? "texto");
 
-	if (options.returnCoords) {
+	if (options.returnCoords ?? true) {
 		formData.append("return_coords", "true");
 	}
-	if (options.useUnifiedOcr) {
+
+	if (options.useUnifiedOcr ?? false) {
 		formData.append("use_unified_ocr", "true");
+	} else {
+		formData.append("use_unified_ocr", "false");
 	}
 
-	const response = await fetch(`${OCR_BASE_URL}/ocr/documento_completo`, {
+	return formData;
+}
+
+async function requestOcr(
+	baseUrl: string,
+	file: File,
+	options: ProcessDocumentOptions,
+): Promise<OcrResponse> {
+	const response = await fetch(`${baseUrl}/ocr/documento_completo`, {
 		method: "POST",
-		body: formData,
+		body: buildFormData(file, options),
 		signal: options.signal,
 	});
 
@@ -146,4 +158,57 @@ export async function processDocument(
 
 	const raw = (await response.json()) as OcrRawResponse;
 	return normalizeOcrResponse(raw);
+}
+
+export async function processDocument(
+	file: File,
+	options: ProcessDocumentOptions = {},
+): Promise<ProcessDocumentResult> {
+	if (!OCR_BASE_URL) {
+		throw new OcrClientError(
+			"Falta configurar NEXT_PUBLIC_API_OCR_URL",
+			500,
+		);
+	}
+
+	try {
+		const data = await requestOcr(OCR_BASE_URL, file, options);
+		return {
+			data,
+			usedFallback: false,
+			provider: "primary",
+			providerLabel: "OCR principal",
+		};
+	} catch (error: unknown) {
+		if (!(error instanceof OcrClientError)) {
+			throw error;
+		}
+
+		const shouldFallback = error.status === 504 && Boolean(OCR_FALLBACK_BASE_URL);
+		if (!shouldFallback) {
+			throw error;
+		}
+
+		try {
+			const data = await requestOcr(OCR_FALLBACK_BASE_URL, file, options);
+			return {
+				data,
+				usedFallback: true,
+				provider: "fallback",
+				providerLabel: OCR_FALLBACK_PROVIDER,
+			};
+		} catch (fallbackError: unknown) {
+			if (fallbackError instanceof OcrClientError) {
+				throw new OcrClientError(
+					`OCR principal respondió 504 y fallback (${OCR_FALLBACK_PROVIDER}) falló: ${fallbackError.message}`,
+					fallbackError.status,
+				);
+			}
+
+			throw new OcrClientError(
+				`OCR principal respondió 504 y fallback (${OCR_FALLBACK_PROVIDER}) falló por error inesperado.`,
+				500,
+			);
+		}
+	}
 }
